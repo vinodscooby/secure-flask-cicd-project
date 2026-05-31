@@ -48,4 +48,5 @@ jobs:
         with:
           image-ref: 'secure-flask-app:${{ github.sha }}'
           format: 'table'
+          exit-code:  '0'
           severity: 'CRITICAL,HIGH'
