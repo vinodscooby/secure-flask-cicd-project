@@ -1,0 +1,43 @@
+name: CI/CD + Security Scan - Project 1
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Security Scans
+      - name: Run Bandit (SAST)
+        run: bandit -r app/ --severity-level high
+
+      - name: Dependency Scan (pip-audit)
+        run: pip-audit --strict
+
+      - name: Secret Scan (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+
+      # Unit Tests
+      - name: Run Unit Tests
+        run: pytest tests/ -v
+
+      # Docker Build
+      - name: Build Docker Image
+        run: docker build -t secure-flask-app:${{ github.sha }} .
